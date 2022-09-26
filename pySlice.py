@@ -70,14 +70,13 @@ def slice_file(f=None, resolution=0.1):
 	stats = model.stats()
 	print(stats)
 
-	for targetz in range(0, int(stats['extents']['z']['upper']), int(interval)):
-		dwg = Drawing('outputs\\svg\\'+str(targetz)+'.svg', profile='tiny')
-		pairs = model.slice_at_z(targetz)
-		for pair in pairs:
-    		#TODO:salvar o conjunto de pa pair[0] e pair[1] em um array e dps salvar o esse conjunto em um array onde cada posicao sera uma camada
-			dwg.add(dwg.line(pair[0], pair[1], stroke=rgb(0, 0, 0, "%")))
-		dwg.save()
+	layers = []
 
+	for targetz in range(0, int(stats['extents']['z']['upper']), int(interval)):
+    
+		pairs = model.slice_at_z(targetz)
+		layers.append(pairs)
+	print(layers[8])
 	print("Status: Finished Outputting Slices")
 
 
@@ -91,7 +90,7 @@ if __name__ == '__main__':
 						metavar='FILE',
 						help='File to be sliced',
 						nargs='?',
-						default='C:\\Users\\dudua\\Documents\\GitHub\\pySlice\\teste.stl',
+						default='teste.stl',
 						type=argparse.FileType('rb'))
 	parser.add_argument('-r', '--resolution', type=float,
 						default=0.1,
