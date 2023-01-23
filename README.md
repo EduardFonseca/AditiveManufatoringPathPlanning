@@ -9,7 +9,4 @@
     Zigzag 2 camadas
     reta com 2 camadas
     tempo de rosca
-
-
-    suporte de 6 cm para BL touch
     
