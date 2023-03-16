@@ -14,28 +14,35 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-#defining the polygon (circle)
-r = 10
-n = 100
-theta = np.linspace(0,2*np.pi,n)
-poly = np.array([r*np.cos(theta),r*np.sin(theta)]).T
+#==============================================================================
+# #defining the polygons
+#==============================================================================
 
-#put a new small circle inside the circle (FIXME1)
+#defining the polygon (circle)
+# r = 10
+# n = 100
+# theta = np.linspace(0,2*np.pi,n)
+# poly = np.array([r*np.cos(theta),r*np.sin(theta)]).T
+
+# #put a new small circle inside the circle (FIXME1)
 # r = 5
 # poly2 = np.array([r*np.cos(theta),r*np.sin(theta)]).T
 # poly = np.concatenate((poly,poly2))
 
 #defining a non comvex polygon (FIXME2)
-# poly = np.array([[0,0],[0,10],[10,10],[10,0],[5,5]])
-# #rotate the polygon
-# theta = np.pi/4
-# R = np.array([[np.cos(theta),-np.sin(theta)],[np.sin(theta),np.cos(theta)]])
-# poly = np.dot(poly,R)
+poly = np.array([[0,0],[0,10],[10,10],[10,0],[5,5]])
+#rotate the polygon
+theta = np.pi/2
+R = np.array([[np.cos(theta),-np.sin(theta)],[np.sin(theta),np.cos(theta)]])
+poly = np.dot(poly,R)
 
+#==============================================================================
+# printer settings
+#==============================================================================
 
 #defining the nozzle size and the distance between the zig-zags lines
 nozzle = 0.4
-line_distance = 0.90*nozzle
+line_distance = 0.9*nozzle
 
 #finding the bouting box of the polygon
 minx = np.min(poly[:,0])
@@ -83,6 +90,7 @@ for i in range(len(x_lines)):
                     points.append([x_lines[i],y])
 
 #construct segmentes between the points with the same x coordinate
+#FIXME: a point cant be in more then 2 segments
 segments = []
 for i in range(len(points)):
     if i == len(points)-1:
@@ -120,11 +128,12 @@ for i in range(len(segments)):
 
 plt.figure()
 #plot poly and points
-plt.plot(poly[:,0],poly[:,1])
+# plt.plot(poly[:,0],poly[:,1])
 # plt.plot([p[0] for p in points],[p[1] for p in points],'o')
 #plot path
-for segment in path:
+for segment in segments:
     plt.plot([segment[0][0],segment[1][0]],[segment[0][1],segment[1][1]])
+
 plt.show()
 
 
