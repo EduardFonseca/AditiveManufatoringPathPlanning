@@ -49,11 +49,20 @@ class Slicer:
         #find the intersection points
         points = self.bb_intersection_points(x_lines,poly)
         #construct segmentes between the points with the same x coordinate
+        
+        array_of_seg = self.separated_segments(points)
+        # join the segmentes in evry array in a zig-zag path
+        paths = []
+        for i in range(len(array_of_seg)):
+            path_seg = self.join_segments_zigzag(array_of_seg[i])
+            paths.append(path_seg)
+        
         segments = self.construct_segments(points)
+
         #join the segments in a zigzag path
         path = self.join_segments_zigzag(segments)
         
-        return path,segments
+        return paths,segments
         
     def bb_intersection_points(self, x_lines,poly):
         points = []
@@ -117,14 +126,76 @@ class Slicer:
             else:
                 path.append(segments[i])
         return path
-        '''for i in range(len(segments)):
-            if i%2 == 0:
-                path.append(segments[i][0])
-                path.append(segments[i][1])
-            else:
-                path.append(segments[i][1])
-                path.append(segments[i][0])
-        return path'''
 
-def teste(self):
-    pass
+    def separated_segments(self, points):
+        # This way the zig-zag path will be more organized
+        # after reconnecting the path without extrusion in between the different parts
+
+        # Create an array with all the x coordinates of the intersection points
+        x_points = [p[0] for p in points]
+        # remove dupes 
+        no_dupes = list(set(x_points))
+        # sort no_dupes
+        no_dupes.sort()
+        final_array = []
+
+        for x in no_dupes:
+            # Find the number of intersection points with the same x coordinate
+            n_points = x_points.count(x)
+            # If it is the first time in the loop, set p_n_points to n_points and create arrays for the segments
+            if x == x_points[0]:
+                print("fitst")
+                p_n_points = n_points
+                number_of_arrays = int(n_points/2)
+                arrays = [[] for _ in range(number_of_arrays)]
+
+            # If the number of intersection points with the same x coordinate is different from the previous one,
+            # create a new array for the segments in this part of the polygon
+            if n_points != p_n_points:
+                print("different")
+                # Add the arrays to the final array
+                final_array.extend(arrays)
+                # Create new arrays for the segments in this part of the polygon
+                number_of_arrays = int(n_points/2)
+                arrays = [[] for _ in range(number_of_arrays)]
+                # Set p_n_points to n_points
+                p_n_points = n_points
+            #create an array with all the points in the same x coordinate
+            x_array = [p for p in points if p[0] == x]
+            counter = 0
+            for i in range(len(x_array)):
+                if i != len(x_array)-1:
+                    if x_array[i][0] == x_array[i+1][0] and i%2==0:
+                        arrays[counter].append([x_array[i],x_array[i+1]])
+                        counter +=1
+            # If this is the last x coordinate, add the arrays to the final array
+            if x == x_points[-1]:
+                print("final")
+                final_array.extend(arrays)
+        
+        return final_array
+
+
+if __name__ == '__main__':
+    # create square inside a square
+    # poly = np.array([[0,0],[0,10],[10,10],[10,8],[10,0]])
+    poly = np.array([[0,0],[0,10],[10,10],[10,8],[1.25,8],[1.25,6],[10,6],[10,4],[3,4],[3,2],[10,2],[10,0]])
+
+
+    sliced = Slicer(0.4,1)
+
+    paths,segments = sliced.zig_zag(poly)
+    plt.figure()
+    #plot poly and points
+    # plt.plot(poly[:,0],poly[:,1])
+    # plt.plot([p[0] for p in points],[p[1] for p in points],'o')
+    #plot path
+
+    for path in paths:
+        for segment in path:
+            plt.plot([segment[0][0],segment[1][0]],[segment[0][1],segment[1][1]])
+
+
+    plt.show()
+
+
