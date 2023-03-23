@@ -1,6 +1,6 @@
 #TODO: add comments
 import numpy as np
-import math
+
 import matplotlib.pyplot as plt
 
 #TODO: Generate a offset in the segments to make the zig-zag path
@@ -11,17 +11,30 @@ class Slicer:
     def __init__(self, nozzle=0.4, line_distance=1):
         self.nozzle = nozzle
         self.line_distance = line_distance*self.nozzle
+        self.extrudion_rate = -0.25
+        self.feed_rate = 1000
         self.poly = []
+        self.paths = []
 
-    def path2Gcode(self, path):
-        #TODO: add calculation of extrusion per distance
-        gcode = []
-        for i in range(len(path)):
-            if i == 0:
-                gcode.append('G0 X'+str(path[i,0])+' Y'+str(path[i,1]))
-            else:
-                gcode.append('G1 X'+str(path[i,0])+' Y'+str(path[i,1]))
-
+    def path2Gcode(self, paths):
+        gcode = ['M302 P1; disable cold extrusion checking',
+                 'M82; modo de extrusao absoluta',
+                 'G92 E0 ; Reseta Extrusora',
+                 'G28 X Y;',
+                 'G29; Auto bed leveling',
+                 'G92 E0 ; Reseta Extrusora',
+                 ]
+        extruder_pos = 0
+        #TODO: Add layer change and z coordinate
+        for path in paths:
+            #TODO: Conectar os diferentes segmentos
+            #A principio o nao existe extrusao entre diferentes segmentos
+            for segment in path:
+                #if first segment of the path move to the start point
+                if segment == path[0]:
+                    gcode.append('G1 X{} Y{} F{}'.format(segment[0][0],segment[0][1],self.feed_rate)) #TODO: testar feed rate
+                extruder_pos += self.extrudion_rate*np.sqrt((segment[0][0]-segment[1][0])**2+(segment[0][1]-segment[1][1])**2)
+                gcode.append('G1 X{} Y{} E{}'.format(segment[1][0],segment[1][1],extruder_pos))
         #Save the gcode to a file
         with open('gcodeClass.gcode', 'w') as f:
             for line in gcode:
@@ -181,21 +194,35 @@ if __name__ == '__main__':
     # poly = np.array([[0,0],[0,10],[10,10],[10,8],[10,0]])
     poly = np.array([[0,0],[0,10],[10,10],[10,8],[1.25,8],[1.25,6],[10,6],[10,4],[3,4],[3,2],[10,2],[10,0]])
 
+    #rotate polygon 45 degrees
+    # theta = np.radians(45)
+    # theta = np.radians(90) #problema rotacionando 90 graus
+    # c, s = np.cos(theta), np.sin(theta)
+    # R = np.array(((c,-s), (s, c)))
+    # poly = np.dot(poly,R)
 
-    sliced = Slicer(0.4,1)
+
+    sliced = Slicer(0.4,0.8)
 
     paths,segments = sliced.zig_zag(poly)
-    plt.figure()
-    #plot poly and points
-    # plt.plot(poly[:,0],poly[:,1])
+    print(len(paths))
+    sliced.path2Gcode(paths)
+    
+    plt.plot(poly[:,0],poly[:,1])
     # plt.plot([p[0] for p in points],[p[1] for p in points],'o')
     #plot path
-
+    plt.figure()
+    
+    colors = ['r','g','b','y','c','m','k','w']
+    i=0
     for path in paths:
+        #make each path one color
+        i +=1
+        if i == len(colors):
+            i = 0
         for segment in path:
-            plt.plot([segment[0][0],segment[1][0]],[segment[0][1],segment[1][1]])
+            plt.plot([segment[0][0],segment[1][0]],[segment[0][1],segment[1][1]],color = colors[i])
+            #color each segment a different color
 
 
-    plt.show()
-
-
+    plt.show()  
