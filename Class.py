@@ -24,6 +24,7 @@ class Slicer:
                  'G29; Auto bed leveling',
                  'G92 E0 ; Reseta Extrusora',
                  ]
+        Z = 0.2
         extruder_pos = 0
         #TODO: Add layer change and z coordinate
         for path in paths:
@@ -32,11 +33,11 @@ class Slicer:
             for segment in path:
                 #if first segment of the path move to the start point
                 if segment == path[0]:
-                    gcode.append('G1 X{} Y{} F{}'.format(segment[0][0],segment[0][1],self.feed_rate)) #TODO: testar feed rate
+                    gcode.append('G1 X{} Y{} Z{} F{}'.format(segment[0][0],segment[0][1],Z,self.feed_rate)) #TODO: testar feed rate
                 extruder_pos += self.extrudion_rate*np.sqrt((segment[0][0]-segment[1][0])**2+(segment[0][1]-segment[1][1])**2)
-                gcode.append('G1 X{} Y{} E{}'.format(segment[1][0],segment[1][1],extruder_pos))
+                gcode.append('G1 X{} Y{} Z{} E{}'.format(segment[1][0],segment[1][1],Z,extruder_pos))
         #Save the gcode to a file
-        with open('gcodeClass.gcode', 'w') as f:
+        with open('testeHJ.gcode', 'w') as f:
             for line in gcode:
                 f.write(line+'\n')
         print('Gcode saved to gcodeClass.gcode')
