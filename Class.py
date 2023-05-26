@@ -16,13 +16,15 @@ class Slicer:
         self.poly = []
         self.paths = []
 
-    def path2Gcode(self, paths):
+    def path2Gcode(self, paths, Z_offset = 3.3):
+        #FIXME: CORRIGIR Z_OFFSET
         gcode = ['M302 P1; disable cold extrusion checking',
                  'M82; modo de extrusao absoluta',
                  'G92 E0 ; Reseta Extrusora',
-                 'G28 X Y;',
+                 'G28;',
                  'G29; Auto bed leveling',
                  'G92 E0 ; Reseta Extrusora',
+                 'F{};'.format(self.feed_rate)
                  ]
         Z = 0.2
         extruder_pos = 0
@@ -33,9 +35,9 @@ class Slicer:
             for segment in path:
                 #if first segment of the path move to the start point
                 if segment == path[0]:
-                    gcode.append('G1 X{} Y{} Z{} F{}'.format(segment[0][0],segment[0][1],Z,self.feed_rate)) #TODO: testar feed rate
+                    gcode.append('G1 X{} Y{} Z{}'.format(segment[0][0],segment[0][1],Z+Z_offset)) #TODO: testar feed rate
                 extruder_pos += self.extrudion_rate*np.sqrt((segment[0][0]-segment[1][0])**2+(segment[0][1]-segment[1][1])**2)
-                gcode.append('G1 X{} Y{} Z{} E{}'.format(segment[1][0],segment[1][1],Z,extruder_pos))
+                gcode.append('G1 X{} Y{} Z{} E{}'.format(segment[1][0],segment[1][1],Z+Z_offset,extruder_pos))
         #Save the gcode to a file
         with open('testeHJ.gcode', 'w') as f:
             for line in gcode:
@@ -194,16 +196,20 @@ if __name__ == '__main__':
     # create square inside a square
     # poly = np.array([[0,0],[0,10],[10,10],[10,8],[10,0]])
     poly = np.array([[0,0],[0,10],[10,10],[10,8],[1.25,8],[1.25,6],[10,6],[10,4],[3,4],[3,2],[10,2],[10,0]])
+    poly = 10*poly
+    #move 50 units in x and 50 units in y
+    poly[:,0] = poly[:,0]+50
+    poly[:,1] = poly[:,1]+50
 
     #rotate polygon 45 degrees
     # theta = np.radians(45)
-    # theta = np.radians(90) #problema rotacionando 90 graus
+    # #theta = np.radians(90) #problema rotacionando 90 graus
     # c, s = np.cos(theta), np.sin(theta)
     # R = np.array(((c,-s), (s, c)))
     # poly = np.dot(poly,R)
 
 
-    sliced = Slicer(0.4,0.8)
+    sliced = Slicer(0.4,2)
 
     paths,segments = sliced.zig_zag(poly)
     print(len(paths))

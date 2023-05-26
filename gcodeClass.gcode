@@ -1,7 +1,7 @@
 M302 P1; disable cold extrusion checking
 M82; modo de extrusao absoluta
 G92 E0 ; Reseta Extrusora
-G28 X Y;
+G28 X Y; Home XY
 G29; Auto bed leveling
 G92 E0 ; Reseta Extrusora
 G1 X0.3333333333333333 Y10.0 F1000
