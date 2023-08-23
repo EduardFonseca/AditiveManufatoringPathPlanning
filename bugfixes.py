@@ -1,39 +1,46 @@
 import plotly.graph_objects as go
 import numpy as np
 
-# define the region
-x = np.linspace(-100,500,100)
-y=x
-y1 = (600-2*x)/1
-y2 = (1000-3*x)/2
-y3 = 300 - 0*x
-y4 = 0*x
-x1 = 400 - 0*y
-x2 = 0*y
+# Define the square points
+# define the starting point
+square_points = np.array([[0, 0]])
+square_side = 20
 
-# find the intersection points
-x_intersect = [0,300,200,400/3,0]
-y_intersect = [0,0,200,300,300]
+# Calculate the radius of the circles
+radius_1 = 0.25
+radius_2 = 0.5
+radius_3 = 0.75
 
-# plot the region
+
+# 1/4 of a circle
+theta = np.linspace(0, np.pi / 2, 100)
+theta_1 = np.linspace(-np.pi / 2, 0, 100)
+theta_2 = np.linspace(0, np.pi / 2, 100)
+theta_3 = np.linspace(np.pi / 2, np.pi, 100)
+
+# Calculate the points on the circle
+# the bottom right corner
+circle_points_1 = np.array([(radius_1 * np.cos(theta_1))+(square_side-radius_1), (radius_1 * np.sin(theta_1))+radius_1]).T
+
+#the top right corner
+circle_points_2 = np.array([(radius_2 * np.cos(theta_2))+(square_side-radius_2), (radius_2 * np.sin(theta_2))+(square_side-radius_2)]).T
+
+#the top left corner
+circle_points_3 = np.array([(radius_3 * np.cos(theta_3))+radius_3, (radius_3 * np.sin(theta_3))+(square_side-radius_3)]).T
+
+
+# Combine the square points and circle points
+Test_square = np.concatenate([square_points, circle_points_1, circle_points_2, circle_points_3,np.array([[0,0]])])
+
+# Create the figure
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=x_intersect,
-                         y=y_intersect,
-                         fill='toself', fillcolor='blue', opacity=0.2, name='Feasible Region'))
-fig.add_trace(go.Scatter(x=x, y=y1, mode='lines', name='2A + B <= 600'))
-fig.add_trace(go.Scatter(x=x, y=y2, mode='lines', name='3A + 2B <= 1000'))
-fig.add_trace(go.Scatter(x=x, y=y3, mode='lines', name='B <=300'))
-fig.add_trace(go.Scatter(x=x, y=y4, mode='lines', name='B >= 0'))
-fig.add_trace(go.Scatter(x=x1, y=y, mode='lines', name='A <= 400'))
-fig.add_trace(go.Scatter(x=x2, y=y, mode='lines', name='A >= 0'))
 
-# Set the plot layout
-fig.update_layout(title='Regiao possivel para a solucao',
-                  xaxis_title='A',
-                  yaxis_title='B',
-                  xaxis_range=[-100, 450],
-                  yaxis_range=[-100, 350],
-                  showlegend=True)
+#plot all_points
+# make axis go from -90 to 90
+fig.update_xaxes(range=[-5, 25])
+fig.update_yaxes(range=[-5, 25])
+fig.add_trace(go.Scatter(x=Test_square[:, 0], y=Test_square[:, 1], marker=dict(size=10)))
+# fig.add_trace(go.Scatter(x=circle_points_1[:, 0], y=circle_points_1[:, 1], marker=dict(size=10)))
 
-# define the constraints
+#show the figure
 fig.show()

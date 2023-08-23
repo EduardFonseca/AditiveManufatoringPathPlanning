@@ -24,7 +24,7 @@ class Slicer:
                  'G28;',
                  'G29; Auto bed leveling',
                  'G92 E0 ; Reseta Extrusora',
-                 'F{};'.format(self.feed_rate)
+                 'G1 F{};'.format(self.feed_rate)
                  ]
         Z = 0.2
         extruder_pos = 0
@@ -39,7 +39,7 @@ class Slicer:
                 extruder_pos += self.extrudion_rate*np.sqrt((segment[0][0]-segment[1][0])**2+(segment[0][1]-segment[1][1])**2)
                 gcode.append('G1 X{} Y{} Z{} E{}'.format(segment[1][0],segment[1][1],Z+Z_offset,extruder_pos))
         #Save the gcode to a file
-        with open('testeHJ.gcode', 'w') as f:
+        with open('circle10.gcode', 'w') as f:
             for line in gcode:
                 f.write(line+'\n')
         print('Gcode saved to gcodeClass.gcode')
@@ -160,7 +160,7 @@ class Slicer:
             n_points = x_points.count(x)
             # If it is the first time in the loop, set p_n_points to n_points and create arrays for the segments
             if x == x_points[0]:
-                print("fitst")
+                print("first")
                 p_n_points = n_points
                 number_of_arrays = int(n_points/2)
                 arrays = [[] for _ in range(number_of_arrays)]
@@ -195,11 +195,21 @@ class Slicer:
 if __name__ == '__main__':
     # create square inside a square
     # poly = np.array([[0,0],[0,10],[10,10],[10,8],[10,0]])
-    poly = np.array([[0,0],[0,10],[10,10],[10,8],[1.25,8],[1.25,6],[10,6],[10,4],[3,4],[3,2],[10,2],[10,0]])
-    poly = 10*poly
-    #move 50 units in x and 50 units in y
-    poly[:,0] = poly[:,0]+50
-    poly[:,1] = poly[:,1]+50
+    # poly = np.array([[0,0],[0,10],[10,10],[10,8],[1.25,8],[1.25,6],[10,6],[10,4],[3,4],[3,2],[10,2],[10,0]])
+    # poly = 10*poly
+    # #move 50 units in x and 50 units in y
+    # poly[:,0] = poly[:,0]+50
+    # poly[:,1] = poly[:,1]+50
+
+    #make a circunference
+    theta = np.linspace(0,2*np.pi,100)
+    r = 10
+    x = r*np.cos(theta)
+    y = r*np.sin(theta)
+    poly = np.array([x,y]).T
+    # print(poly)
+
+
 
     #rotate polygon 45 degrees
     # theta = np.radians(45)
@@ -209,10 +219,11 @@ if __name__ == '__main__':
     # poly = np.dot(poly,R)
 
 
-    sliced = Slicer(0.4,2)
+    sliced = Slicer(0.4,0.4)
+    # sliced.path2Gcode(ply)
 
     paths,segments = sliced.zig_zag(poly)
-    print(len(paths))
+
     sliced.path2Gcode(paths)
     
     plt.plot(poly[:,0],poly[:,1])
